@@ -2,6 +2,9 @@ import argparse
 import sys
 from pathlib import Path
 
+from citrouille.kube_client import K8sClient
+from citrouille.formatters import TableFormatter, JSONFormatter
+
 
 __version__ = "0.1"
 
@@ -152,7 +155,27 @@ def main():
 
 
 def handle_inventory(args):
-    print("[inventory] Command not yet implemented")
+    try:
+        k8s = K8sClient(kubeconfig=args.kubeconfig, context=args.context)
+
+        if args.all_namespaces:
+            deployments = k8s.get_all_deployments()
+        else:
+            deployments = k8s.get_deployments(namespace=args.namespace)
+
+        if args.output == "json":
+            output = JSONFormatter.format_deployments(deployments)
+        else:
+            output = TableFormatter.format_deployments(deployments)
+
+        print(output)
+
+    except ConnectionError as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 def handle_compare(args):

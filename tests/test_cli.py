@@ -1,14 +1,12 @@
 import pytest
-import sys
 from io import StringIO
-from unittest.mock import patch
-from pathlib import Path
+from unittest.mock import patch, Mock
+from datetime import datetime
 
-from citrouille.cli import create_parser, main, __version__
+from citrouille.cli import create_parser, main
 
 
 class TestArgumentParser:
-
     def test_parser_creation(self):
         parser = create_parser()
         assert parser is not None
@@ -28,14 +26,13 @@ class TestArgumentParser:
 
     def test_no_command_shows_help(self):
         with patch('sys.argv', ['citrouille']):
-            with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            with patch('sys.stdout', new_callable=StringIO):
                 with pytest.raises(SystemExit) as exc_info:
                     main()
                 assert exc_info.value.code == 0
 
 
 class TestGlobalOptions:
-
     def test_kubeconfig_option(self):
         parser = create_parser()
         args = parser.parse_args(["--kubeconfig", "/path/to/config", "inventory"])
@@ -68,7 +65,6 @@ class TestGlobalOptions:
 
 
 class TestInventoryCommand:
-
     def test_inventory_command(self):
         parser = create_parser()
         args = parser.parse_args(["inventory"])
@@ -117,7 +113,6 @@ class TestInventoryCommand:
 
 
 class TestCompareCommand:
-
     def test_compare_command(self):
         parser = create_parser()
         args = parser.parse_args(["compare", "production", "staging"])
@@ -153,7 +148,6 @@ class TestCompareCommand:
 
 
 class TestSecurityCommand:
-
     def test_security_command_default(self):
         parser = create_parser()
         args = parser.parse_args(["security"])
@@ -230,8 +224,7 @@ class TestSecurityCommand:
 
 
 class TestMainFunction:
-
-    def test_main_with_nonexistent_kubeconfig(self, tmp_path):
+    def test_main_with_nonexistent_kubeconfig(self):
         with patch('sys.argv', ['citrouille', '--kubeconfig', '/nonexistent/path', 'inventory']):
             with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
                 with pytest.raises(SystemExit) as exc_info:
@@ -239,13 +232,61 @@ class TestMainFunction:
                 assert exc_info.value.code == 1
                 assert "kubeconfig file not found" in mock_stderr.getvalue()
 
-    def test_main_inventory_placeholder(self):
+    @patch('citrouille.cli.K8sClient')
+    def test_main_inventory_table_output(self, mock_kube_client):
+        mock_k8s = Mock()
+        mock_kube_client.return_value = mock_k8s
+        mock_k8s.get_deployments.return_value = [{
+            "name": "nginx",
+            "namespace": "default",
+            "images": ["nginx:1.21"],
+            "created": datetime(2024, 11, 11, 10, 30, 0),
+            "replicas": 3
+        }]
         with patch('sys.argv', ['citrouille', 'inventory', 'default']):
             with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
                 main()
                 output = mock_stdout.getvalue()
-                assert "[inventory]" in output
-                assert "not yet implemented" in output
+                assert "nginx" in output
+                assert "default" in output
+                assert "nginx:1.21" in output
+
+    @patch('citrouille.cli.K8sClient')
+    def test_main_inventory_json_output(self, mock_kube_client):
+        mock_k8s = Mock()
+        mock_kube_client.return_value = mock_k8s
+        mock_k8s.get_deployments.return_value = [{
+            "name": "nginx",
+            "namespace": "default",
+            "images": ["nginx:1.21"],
+            "created": datetime(2024, 11, 11, 10, 30, 0),
+            "replicas": 3
+        }]
+        with patch('sys.argv', ['citrouille', '-o', 'json', 'inventory', 'default']):
+            with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+                main()
+                output = mock_stdout.getvalue()
+                assert '"name": "nginx"' in output
+                assert '"namespace": "default"' in output
+
+    @patch('citrouille.cli.K8sClient')
+    def test_main_inventory_all_namespaces(self, mock_kube_client):
+        mock_k8s = Mock()
+        mock_kube_client.return_value = mock_k8s
+        mock_k8s.get_all_deployments.return_value = []
+        with patch('sys.argv', ['citrouille', 'inventory', '-A']):
+            main()
+            mock_k8s.get_all_deployments.assert_called_once()
+
+    @patch('citrouille.cli.K8sClient')
+    def test_main_inventory_connection_error(self, mock_kube_client):
+        mock_kube_client.side_effect = ConnectionError("Failed to connect")
+        with patch('sys.argv', ['citrouille', 'inventory']):
+            with patch('sys.stderr', new_callable=StringIO) as mock_stderr:
+                with pytest.raises(SystemExit) as exc_info:
+                    main()
+                assert exc_info.value.code == 1
+                assert "Error:" in mock_stderr.getvalue()
 
     def test_main_compare_placeholder(self):
         with patch('sys.argv', ['citrouille', 'compare', 'ns1', 'ns2']):

@@ -24,3 +24,7 @@ Run tests:
 ```bash
 $ pytest -v
 ```
+
+## Tests
+
+The tool is not tested against a cluster due to CI/CD limitations. Kube requests are emulated.

@@ -13,9 +13,9 @@
 - [X] Argument parsing
 
 **Milestone 2 (Inventory)**
-- [ ] Inventory generation
-- [ ] Inventory visualisation
-- [ ] JSON inventory export
+- [X] Inventory generation
+- [X] Inventory visualisation
+- [X] JSON inventory export
 
 **Milestone 3 (Blue/Green)**
 - [ ] Visualise namespace differences
