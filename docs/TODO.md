@@ -9,8 +9,8 @@
 - [X] Basic documentation
 
 **Milestone 1 (First tests passing)**
-- [ ] CLI basics
-- [ ] Argument parsing
+- [X] CLI basics
+- [X] Argument parsing
 
 **Milestone 2 (Inventory)**
 - [ ] Inventory generation
