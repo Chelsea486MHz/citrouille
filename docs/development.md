@@ -17,7 +17,7 @@ $ pip install -r requirements.txt -r requirements-dev.txt
 
 Build the project:
 ```bash
-$ python -m build
+$ pip install -e .
 ```
 
 Run tests:
