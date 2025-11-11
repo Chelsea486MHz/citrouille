@@ -7,7 +7,7 @@ name = "citrouille"
 version = "0.1"
 description = "CLI tool to identify security issues on Kubernetes at the deployment level, compare namespaces for green/blue cycles, and reduce time-to-recovery "
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.12"
 license = {file = "LICENSE"}
 authors = [
     {name = "Chelsea486MHz", email = "mail@chelsea486mhz.fr"}
