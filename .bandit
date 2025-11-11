@@ -1,0 +1,11 @@
+[bandit]
+
+exclude_dirs = [
+    '/tests/',
+    '/venv/',
+    '/microservices-demo/'
+]
+
+skips = []
+confidence = MEDIUM
+recursive = True

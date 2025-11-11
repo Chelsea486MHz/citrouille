@@ -1,0 +1,15 @@
+./venv/
+./microservices-demo/
+./__pycache__/
+./.pytest_cache/
+./htmlcov/
+./build/
+./dist/
+./*.egg-info/
+
+./*.pyc
+./*.pyo
+./.coverage
+./.coverage.xml
+./report-*.json
+./report-*.txt
