@@ -365,7 +365,7 @@ class TestMainFunction:
     # test_main_inventory_table_output
     # Tests main function executing inventory command with table output
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_inventory_table_output(self, mock_kube_client):
         mock_k8s = Mock()
         mock_kube_client.return_value = mock_k8s
@@ -390,7 +390,7 @@ class TestMainFunction:
     # test_main_inventory_json_output
     # Tests main function executing inventory command with JSON output
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_inventory_json_output(self, mock_kube_client):
         mock_k8s = Mock()
         mock_kube_client.return_value = mock_k8s
@@ -414,7 +414,7 @@ class TestMainFunction:
     # test_main_inventory_all_namespaces
     # Tests main function executing inventory with -A flag
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_inventory_all_namespaces(self, mock_kube_client):
         mock_k8s = Mock()
         mock_kube_client.return_value = mock_k8s
@@ -427,7 +427,7 @@ class TestMainFunction:
     # test_main_inventory_connection_error
     # Tests that main handles connection errors gracefully
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_inventory_connection_error(self, mock_kube_client):
         mock_kube_client.side_effect = ConnectionError("Failed to connect")
         with patch("sys.argv", ["citrouille", "inventory"]):
@@ -441,7 +441,7 @@ class TestMainFunction:
     # test_main_compare_table_output
     # Tests main function executing compare command with table output
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_compare_table_output(self, mock_kube_client):
         mock_k8s = Mock()
         mock_kube_client.return_value = mock_k8s
@@ -480,7 +480,7 @@ class TestMainFunction:
     # test_main_compare_json_output
     # Tests main function executing compare command with JSON output
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_compare_json_output(self, mock_kube_client):
         mock_k8s = Mock()
         mock_kube_client.return_value = mock_k8s
@@ -511,7 +511,7 @@ class TestMainFunction:
     # test_main_compare_connection_error
     # Tests that compare command handles connection errors gracefully
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_compare_connection_error(self, mock_kube_client):
         mock_kube_client.side_effect = ConnectionError("Failed to connect")
 
@@ -526,7 +526,7 @@ class TestMainFunction:
     # test_main_compare_identical_namespaces
     # Tests compare command output when namespaces have identical deployments
     #
-    @patch("citrouille.cli.K8sClient")
+    @patch("citrouille.cli.KubeClient")
     def test_main_compare_identical_namespaces(self, mock_kube_client):
         mock_k8s = Mock()
         mock_kube_client.return_value = mock_k8s
@@ -556,10 +556,13 @@ class TestMainFunction:
     # test_main_security_placeholder
     # Tests that security command shows placeholder message
     #
-    def test_main_security_placeholder(self):
+    def test_main_security_no_findings(self):
         with patch("sys.argv", ["citrouille", "security"]):
-            with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
-                main()
-                output = mock_stdout.getvalue()
-                assert "[security]" in output
-                assert "not yet implemented" in output
+            with patch("citrouille.cli.KubeClient") as mock_client:
+                with patch("citrouille.cli.run_security_checks") as mock_checks:
+                    # Mock empty findings (no security issues)
+                    mock_checks.return_value = []
+                    with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
+                        main()
+                        output = mock_stdout.getvalue()
+                        assert "No security issues found" in output

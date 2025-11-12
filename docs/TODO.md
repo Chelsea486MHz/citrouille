@@ -22,15 +22,17 @@
 - [X] Report drift between namespaces
 
 **Milestone 4 (Security)**
-- [ ] Trivy integration for container vulns
-- [ ] Configuration checks
-- [ ] Network security analysis
+- [X] Configuration checks
+- [X] Network security analysis
+- [X] RBAC checks
 - [ ] Trivy integration for SBOM generation
+- [ ] Trivy integration for container vulns
 
 **Milestone 5 (first release)**
 - [ ] Switch from `build` to `stable` status
 - [ ] User manual
 - [ ] Installation manual
+- [ ] Translations
 
 **Milestone 6 (distribution)**
 - [ ] RPM package

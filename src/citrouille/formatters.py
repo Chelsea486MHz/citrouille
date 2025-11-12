@@ -236,3 +236,107 @@ class JSONFormatter:
         }
 
         return json.dumps(output, indent=2)
+
+
+class SecurityFormatter:
+    #
+    # format_findings
+    # Formats security check findings as a CLI report grouped by severity
+    #
+    @staticmethod
+    def format_findings(
+        findings: List[Dict[str, Any]], output_format: str = "table"
+    ) -> str:
+        if output_format == "json":
+            return SecurityFormatter._format_findings_json(findings)
+        else:
+            return SecurityFormatter._format_findings_table(findings)
+
+    @staticmethod
+    def _format_findings_table(findings: List[Dict[str, Any]]) -> str:
+        if not findings:
+            return "\n\u2713 No security issues found!\n"
+
+        lines = []
+        lines.append
+        lines.append("\n" + "=" * 100)
+        lines.append("SECURITY AUDIT")
+        lines.append("=" * 100)
+
+        # Group findings by severity
+        severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+        findings_by_severity = {severity: [] for severity in severity_order}
+
+        for finding in findings:
+            severity = finding.get("severity", "MEDIUM")
+            findings_by_severity[severity].append(finding)
+
+        # Count findings
+        total_count = len(findings)
+        severity_counts = {
+            severity: len(findings_by_severity[severity]) for severity in severity_order
+        }
+
+        # Display summary
+        lines.append(f"\nTotal findings: {total_count}")
+        lines.append(
+            f"  CRITICAL: {severity_counts['CRITICAL']}, "
+            f"HIGH: {severity_counts['HIGH']}, "
+            f"MEDIUM: {severity_counts['MEDIUM']}, "
+            f"LOW: {severity_counts['LOW']}"
+        )
+        lines.append("")
+
+        # Display findings grouped by severity
+        for severity in severity_order:
+            severity_findings = findings_by_severity[severity]
+            if not severity_findings:
+                continue
+
+            lines.append("-" * 100)
+            lines.append(f"\n[{severity}] {len(severity_findings)} finding(s)")
+            lines.append("")
+
+            for idx, finding in enumerate(severity_findings, 1):
+                lines.append(
+                    f"  [{idx}] {finding.get('check_name', 'Unknown')} "
+                    f"({finding.get('cwe', 'N/A')})"
+                )
+                lines.append(
+                    f"      Resource: {finding.get('resource_type', 'N/A')} - "
+                    f"{finding.get('resource_name', 'N/A')}"
+                )
+                if finding.get("container") != "N/A":
+                    lines.append(f"      Container: {finding.get('container', 'N/A')}")
+                lines.append(f"      Issue: {finding.get('message', 'No message')}")
+                lines.append(f"      Details: {finding.get('details', 'No details')}")
+                lines.append("")
+
+        lines.append("=" * 100)
+        return "\n".join(lines)
+
+    @staticmethod
+    def _format_findings_json(findings: List[Dict[str, Any]]) -> str:
+        if not findings:
+            return json.dumps({"findings": [], "summary": {"total": 0}}, indent=2)
+
+        # Group findings by severity
+        severity_order = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+        findings_by_severity = {severity: [] for severity in severity_order}
+
+        for finding in findings:
+            severity = finding.get("severity", "MEDIUM")
+            findings_by_severity[severity].append(finding)
+
+        output = {
+            "findings": findings,
+            "summary": {
+                "total": len(findings),
+                "by_severity": {
+                    severity: len(findings_by_severity[severity])
+                    for severity in severity_order
+                },
+            },
+        }
+
+        return json.dumps(output, indent=2)

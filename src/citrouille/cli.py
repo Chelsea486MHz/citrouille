@@ -2,9 +2,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from citrouille.kube_client import K8sClient
-from citrouille.formatters import TableFormatter, JSONFormatter
+from citrouille.kube_client import KubeClient
+from citrouille.formatters import TableFormatter, JSONFormatter, SecurityFormatter
 from citrouille.comparator import compare_deployments
+from citrouille.security_checks import run_security_checks
 
 
 __version__ = "0.1"
@@ -152,7 +153,7 @@ def main():
 #
 def handle_inventory(args):
     try:
-        k8s = K8sClient(kubeconfig=args.kubeconfig, context=args.context)
+        k8s = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
 
         if args.all_namespaces:
             deployments = k8s.get_all_deployments()
@@ -179,7 +180,7 @@ def handle_inventory(args):
 #
 def handle_compare(args):
     try:
-        client = K8sClient(kubeconfig_path=args.kubeconfig, context=args.context)
+        client = KubeClient(kubeconfig_path=args.kubeconfig, context=args.context)
 
         deployments_ns1 = client.get_deployments(args.namespace1)
         deployments_ns2 = client.get_deployments(args.namespace2)
@@ -211,7 +212,39 @@ def handle_compare(args):
 # Security analysis
 #
 def handle_security(args):
-    print("[security] Command not yet implemented")
+    try:
+        kube_client = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
+
+        check_config = args.check_config
+        check_network = args.check_network
+
+        # If no specific checks are specified, run all checks
+        if not check_config and not check_network:
+            check_config = True
+            check_network = True
+
+        findings = run_security_checks(
+            kube_client=kube_client,
+            namespace=args.namespace,
+            check_config=check_config,
+            check_network=check_network,
+        )
+
+        output = SecurityFormatter.format_findings(findings, args.output)
+        print(output)
+
+        critical_high = [
+            f for f in findings if f.get("severity") in ["CRITICAL", "HIGH"]
+        ]
+        if critical_high:
+            sys.exit(1)
+
+    except ConnectionError as e:
+        print(f"Error: Unable to connect to Kubernetes cluster: {e}", file=sys.stderr)
+        sys.exit(1)
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

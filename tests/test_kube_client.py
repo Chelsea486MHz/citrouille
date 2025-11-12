@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import Mock, patch
 from datetime import datetime
 
-from citrouille.kube_client import K8sClient
+from citrouille.kube_client import KubeClient
 
 #
 # test_kube_client.py
@@ -11,29 +11,29 @@ from citrouille.kube_client import K8sClient
 #
 
 
-class TestK8sClient:
+class TestKubeClient:
     #
     # test_init_default_config
-    # Tests K8sClient initialization with default configuration (no kubeconfig or context specified)
+    # Tests KubeClient initialization with default configuration (no kubeconfig or context specified)
     #
     @patch("citrouille.kube_client.config.load_kube_config")
     @patch("citrouille.kube_client.client.AppsV1Api")
     @patch("citrouille.kube_client.client.CoreV1Api")
     def test_init_default_config(self, mock_core_v1, mock_apps_v1, mock_load_config):
-        k8s = K8sClient()
+        k8s = KubeClient()
         mock_load_config.assert_called_once_with(context=None)
         assert k8s.kubeconfig is None
         assert k8s.context is None
 
     #
     # test_init_with_kubeconfig
-    # Tests K8sClient initialization with a custom kubeconfig file path
+    # Tests KubeClient initialization with a custom kubeconfig file path
     #
     @patch("citrouille.kube_client.config.load_kube_config")
     @patch("citrouille.kube_client.client.AppsV1Api")
     @patch("citrouille.kube_client.client.CoreV1Api")
     def test_init_with_kubeconfig(self, mock_core_v1, mock_apps_v1, mock_load_config):
-        k8s = K8sClient(kubeconfig="/path/to/config")
+        k8s = KubeClient(kubeconfig="/path/to/config")
         mock_load_config.assert_called_once_with(
             config_file="/path/to/config", context=None
         )
@@ -41,19 +41,19 @@ class TestK8sClient:
 
     #
     # test_init_with_context
-    # Tests K8sClient initialization with a specific Kubernetes context
+    # Tests KubeClient initialization with a specific Kubernetes context
     #
     @patch("citrouille.kube_client.config.load_kube_config")
     @patch("citrouille.kube_client.client.AppsV1Api")
     @patch("citrouille.kube_client.client.CoreV1Api")
     def test_init_with_context(self, mock_core_v1, mock_apps_v1, mock_load_config):
-        k8s = K8sClient(context="my-context")
+        k8s = KubeClient(context="my-context")
         mock_load_config.assert_called_once_with(context="my-context")
         assert k8s.context == "my-context"
 
     #
     # test_init_connection_error
-    # Tests that K8sClient raises ConnectionError when Kubernetes connection fails
+    # Tests that KubeClient raises ConnectionError when Kubernetes connection fails
     #
     @patch("citrouille.kube_client.config.load_kube_config")
     @patch("citrouille.kube_client.client.AppsV1Api")
@@ -61,7 +61,7 @@ class TestK8sClient:
     def test_init_connection_error(self, mock_core_v1, mock_apps_v1, mock_load_config):
         mock_load_config.side_effect = Exception("Connection failed")
         with pytest.raises(ConnectionError, match="Failed to connect to Kubernetes"):
-            K8sClient()
+            KubeClient()
 
     #
     # test_get_namespaces
@@ -85,7 +85,7 @@ class TestK8sClient:
         mock_response.items = [mock_ns1, mock_ns2]
         mock_core_v1.list_namespace.return_value = mock_response
 
-        k8s = K8sClient()
+        k8s = KubeClient()
         namespaces = k8s.get_namespaces()
 
         assert namespaces == ["default", "kube-system"]
@@ -117,7 +117,7 @@ class TestK8sClient:
         mock_response.items = [mock_deployment]
         mock_apps_v1.list_namespaced_deployment.return_value = mock_response
 
-        k8s = K8sClient()
+        k8s = KubeClient()
         deployments = k8s.get_deployments(namespace="default")
 
         assert len(deployments) == 1
@@ -161,7 +161,7 @@ class TestK8sClient:
         mock_response.items = [mock_deployment]
         mock_apps_v1.list_namespaced_deployment.return_value = mock_response
 
-        k8s = K8sClient()
+        k8s = KubeClient()
         deployments = k8s.get_deployments(namespace="production")
 
         assert len(deployments) == 1
@@ -202,7 +202,7 @@ class TestK8sClient:
         mock_response.items = [mock_deployment1, mock_deployment2]
         mock_apps_v1.list_deployment_for_all_namespaces.return_value = mock_response
 
-        k8s = K8sClient()
+        k8s = KubeClient()
         deployments = k8s.get_all_deployments()
 
         assert len(deployments) == 2
@@ -240,7 +240,7 @@ class TestK8sClient:
         mock_response.items = [mock_deployment]
         mock_apps_v1.list_namespaced_deployment.return_value = mock_response
 
-        k8s = K8sClient()
+        k8s = KubeClient()
         deployments = k8s.get_deployments(namespace="default")
 
         assert deployments[0]["replicas"] == 0
