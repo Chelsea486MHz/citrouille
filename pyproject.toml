@@ -66,3 +66,14 @@ addopts = [
     "--cov=src",
     "--cov-report=term-missing"
 ]
+
+[tool.black]
+line-length = 88
+target-version = ["py314"]
+exclude = '''
+/(
+    \.git
+  | venv
+  | microservices-demo
+)/
+'''
