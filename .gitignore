@@ -10,6 +10,6 @@ dist/
 *.pyc
 *.pyo
 .coverage
-.coverage.xml
+coverage.xml
 report-*.json
 report-*.txt
