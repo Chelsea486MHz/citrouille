@@ -4,4 +4,5 @@ exclude =
     venv,
     microservices-demo
 ignore =
-    E501
+    E501,
+    W503
