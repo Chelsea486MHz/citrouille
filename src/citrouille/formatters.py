@@ -228,9 +228,11 @@ class JSONFormatter:
             "missing_count": len(output["missing"]),
             "extra_count": len(output["extra"]),
             "changed_count": len(output["changed"]),
-            "identical": len(output["missing"]) == 0
-            and len(output["extra"]) == 0
-            and len(output["changed"]) == 0,
+            "identical": (
+                len(output["missing"]) == 0
+                and len(output["extra"]) == 0
+                and len(output["changed"]) == 0
+            ),
         }
 
         return json.dumps(output, indent=2)
