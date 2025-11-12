@@ -21,8 +21,7 @@ class K8sClient:
         try:
             if self.kubeconfig:
                 config.load_kube_config(
-                    config_file=self.kubeconfig,
-                    context=self.context
+                    config_file=self.kubeconfig, context=self.context
                 )
             else:
                 config.load_kube_config(context=self.context)
@@ -55,18 +54,22 @@ class K8sClient:
                         for container in deployment.spec.template.spec.containers
                     ]
 
-                result.append({
-                    "name": deployment.metadata.name,
-                    "namespace": deployment.metadata.namespace,
-                    "images": images,
-                    "created": deployment.metadata.creation_timestamp,
-                    "replicas": deployment.spec.replicas or 0
-                })
+                result.append(
+                    {
+                        "name": deployment.metadata.name,
+                        "namespace": deployment.metadata.namespace,
+                        "images": images,
+                        "created": deployment.metadata.creation_timestamp,
+                        "replicas": deployment.spec.replicas or 0,
+                    }
+                )
 
             return result
 
         except ApiException as e:
-            raise ApiException(f"Failed to list deployments in namespace {namespace}: {e}")
+            raise ApiException(
+                f"Failed to list deployments in namespace {namespace}: {e}"
+            )
 
     def get_all_deployments(self) -> List[Dict[str, Any]]:
         try:
@@ -81,13 +84,15 @@ class K8sClient:
                         for container in deployment.spec.template.spec.containers
                     ]
 
-                result.append({
-                    "name": deployment.metadata.name,
-                    "namespace": deployment.metadata.namespace,
-                    "images": images,
-                    "created": deployment.metadata.creation_timestamp,
-                    "replicas": deployment.spec.replicas or 0
-                })
+                result.append(
+                    {
+                        "name": deployment.metadata.name,
+                        "namespace": deployment.metadata.namespace,
+                        "images": images,
+                        "created": deployment.metadata.creation_timestamp,
+                        "replicas": deployment.spec.replicas or 0,
+                    }
+                )
 
             return result
 

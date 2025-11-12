@@ -18,8 +18,8 @@
 - [X] JSON inventory export
 
 **Milestone 3 (Blue/Green)**
-- [ ] Visualise namespace differences
-- [ ] Report drift between namespaces
+- [X] Visualise namespace differences
+- [X] Report drift between namespaces
 
 **Milestone 4 (Security)**
 - [ ] Trivy integration for container vulns
