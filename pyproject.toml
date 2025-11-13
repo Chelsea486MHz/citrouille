@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "citrouille"
-version = "0.1"
+version = "1.0.0"
 description = "CLI tool to identify security issues on Kubernetes at the deployment level, compare namespaces for green/blue cycles, and reduce time-to-recovery "
 readme = "README.md"
 requires-python = ">=3.12"
@@ -14,7 +14,7 @@ authors = [
 ]
 keywords = ["kubernetes", "devops", "devsecops", "seceng", "secops"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",

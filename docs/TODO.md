@@ -27,10 +27,10 @@
 - [X] RBAC checks
 
 **Milestone 5 (first release)**
-- [ ] .citrouille config file to configure kubeconfig path and namespace aliases
-- [ ] Switch from `build` to `stable` status
+- [X] .citrouille config file to configure kubeconfig path and namespace aliases
+- [X] Switch from `build` to `stable` status
 - [X] User manual
-- [ ] Installation manual
+- [X] Installation manual
 
 **Milestone 6 (distribution)**
 - [ ] RPM package

@@ -6,9 +6,10 @@ from citrouille.kube_client import KubeClient
 from citrouille.formatters import TableFormatter, JSONFormatter, SecurityFormatter
 from citrouille.comparator import compare_deployments
 from citrouille.security_checks import run_security_checks
+from citrouille.config import load_config, resolve_namespace
 
 
-__version__ = "0.1"
+__version__ = "1.0.0"
 
 
 def create_parser():
@@ -120,6 +121,14 @@ def main():
         parser.print_help()
         sys.exit(0)
 
+    # Load configuration file
+    config = load_config()
+
+    # Apply kubeconfig from config if not provided via CLI
+    if args.kubeconfig is None and "kubeconfig" in config:
+        args.kubeconfig = config["kubeconfig"]
+
+    # Validate kubeconfig path if provided
     if args.kubeconfig:
         kubeconfig_path = Path(args.kubeconfig).expanduser()
         if not kubeconfig_path.exists():
@@ -129,24 +138,26 @@ def main():
             sys.exit(1)
 
     if args.command == "inventory":
-        handle_inventory(args)
+        handle_inventory(args, config)
     elif args.command == "compare":
-        handle_compare(args)
+        handle_compare(args, config)
     elif args.command == "security":
-        handle_security(args)
+        handle_security(args, config)
 
 
 #
 # Inventory generation
 #
-def handle_inventory(args):
+def handle_inventory(args, config):
     try:
         k8s = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
 
         if args.all_namespaces:
             deployments = k8s.get_all_deployments()
         else:
-            deployments = k8s.get_deployments(namespace=args.namespace)
+            # Resolve namespace alias if present in config
+            namespace = resolve_namespace(args.namespace, config)
+            deployments = k8s.get_deployments(namespace=namespace)
 
         if args.output == "json":
             output = JSONFormatter.format_deployments(deployments)
@@ -166,25 +177,25 @@ def handle_inventory(args):
 #
 # Comparison between namespaces
 #
-def handle_compare(args):
+def handle_compare(args, config):
     try:
         client = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
 
-        deployments_ns1 = client.get_deployments(args.namespace1)
-        deployments_ns2 = client.get_deployments(args.namespace2)
+        # Resolve namespace aliases if present in config
+        namespace1 = resolve_namespace(args.namespace1, config)
+        namespace2 = resolve_namespace(args.namespace2, config)
+
+        deployments_ns1 = client.get_deployments(namespace1)
+        deployments_ns2 = client.get_deployments(namespace2)
 
         comparison = compare_deployments(deployments_ns1, deployments_ns2)
 
         if args.output == "json":
             formatter = JSONFormatter()
-            output = formatter.format_comparison(
-                comparison, args.namespace1, args.namespace2
-            )
+            output = formatter.format_comparison(comparison, namespace1, namespace2)
         else:
             formatter = TableFormatter()
-            output = formatter.format_comparison(
-                comparison, args.namespace1, args.namespace2
-            )
+            output = formatter.format_comparison(comparison, namespace1, namespace2)
 
         print(output)
 
@@ -199,7 +210,7 @@ def handle_compare(args):
 #
 # Security analysis
 #
-def handle_security(args):
+def handle_security(args, config):
     try:
         kube_client = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
 
@@ -211,9 +222,12 @@ def handle_security(args):
             check_config = True
             check_network = True
 
+        # Resolve namespace alias if present in config
+        namespace = resolve_namespace(args.namespace, config)
+
         findings = run_security_checks(
             kube_client=kube_client,
-            namespace=args.namespace,
+            namespace=namespace,
             check_config=check_config,
             check_network=check_network,
         )
