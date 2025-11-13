@@ -4,7 +4,7 @@
 
 ![Maintained](https://img.shields.io/badge/Maintained-yes-green)
 ![License](https://img.shields.io/badge/License-GPL-red)
-![Status](https://img.shields.io/badge/Status-build-blue)
+![Status](https://img.shields.io/badge/Status-stable-blue)
 [![CI](https://github.com/Chelsea486MHz/citrouille/actions/workflows/ci.yml/badge.svg)](https://github.com/Chelsea486MHz/citrouille/actions/workflows/ci.yml)
 
 # Pin down the root cause.
