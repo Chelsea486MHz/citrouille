@@ -21,9 +21,8 @@ With `citrouille`, a CLI utility to quickly check Kubernetes deployments, engine
 - Ensure a safe transition between your environments
 
 **Security features:**
-- **At the cluster level:** Check for NetworkPolicy or Ingress issues and misconfigurations
-- **At the image level:** Generate software bills of materials (SBOMs) and identify enumerated vulnerabilities (CVEs) with Trivy integration
-- **At the product level:** check versions, creation date
+- Perform security audits related to common enumerated weaknesses (CWEs) in cluster manifests
+- Identify misconfigurations in containers, networks, and RBAC policies
 
 **Installation manual**
 

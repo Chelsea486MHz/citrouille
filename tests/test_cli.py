@@ -238,10 +238,8 @@ class TestSecurityCommand:
         args = parser.parse_args(["security"])
         assert args.command == "security"
         assert args.namespace == "default"
-        assert args.scan_vulnerabilities is False
         assert args.check_config is False
         assert args.check_network is False
-        assert args.generate_sbom is False
 
     #
     # test_security_with_namespace
@@ -252,15 +250,6 @@ class TestSecurityCommand:
         args = parser.parse_args(["security", "production"])
         assert args.command == "security"
         assert args.namespace == "production"
-
-    #
-    # test_security_scan_vulnerabilities
-    # Tests security command with --scan-vulnerabilities flag
-    #
-    def test_security_scan_vulnerabilities(self):
-        parser = create_parser()
-        args = parser.parse_args(["security", "--scan-vulnerabilities"])
-        assert args.scan_vulnerabilities is True
 
     #
     # test_security_check_config
@@ -281,15 +270,6 @@ class TestSecurityCommand:
         assert args.check_network is True
 
     #
-    # test_security_generate_sbom
-    # Tests security command with --generate-sbom flag
-    #
-    def test_security_generate_sbom(self):
-        parser = create_parser()
-        args = parser.parse_args(["security", "--generate-sbom"])
-        assert args.generate_sbom is True
-
-    #
     # test_security_all_flags
     # Tests security command with all security flags enabled
     #
@@ -299,18 +279,14 @@ class TestSecurityCommand:
             [
                 "security",
                 "production",
-                "--scan-vulnerabilities",
                 "--check-config",
                 "--check-network",
-                "--generate-sbom",
             ]
         )
         assert args.command == "security"
         assert args.namespace == "production"
-        assert args.scan_vulnerabilities is True
         assert args.check_config is True
         assert args.check_network is True
-        assert args.generate_sbom is True
 
     #
     # test_security_with_global_options
@@ -326,14 +302,14 @@ class TestSecurityCommand:
                 "json",
                 "security",
                 "kube-system",
-                "--scan-vulnerabilities",
+                "--check-config",
             ]
         )
         assert args.command == "security"
         assert args.namespace == "kube-system"
         assert args.context == "prod"
         assert args.output == "json"
-        assert args.scan_vulnerabilities is True
+        assert args.check_config is True
 
     #
     # test_security_help

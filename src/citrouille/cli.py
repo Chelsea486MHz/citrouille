@@ -100,12 +100,6 @@ def create_parser():
     )
 
     security_parser.add_argument(
-        "--scan-vulnerabilities",
-        action="store_true",
-        help="Run Trivy vulnerability scan on container images",
-    )
-
-    security_parser.add_argument(
         "--check-config",
         action="store_true",
         help="Perform configuration security checks",
@@ -113,12 +107,6 @@ def create_parser():
 
     security_parser.add_argument(
         "--check-network", action="store_true", help="Analyze network security"
-    )
-
-    security_parser.add_argument(
-        "--generate-sbom",
-        action="store_true",
-        help="Generate Software Bill of Materials (SBOM) using Trivy",
     )
 
     return parser
