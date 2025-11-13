@@ -29,7 +29,7 @@
 **Milestone 5 (first release)**
 - [ ] .citrouille config file to configure kubeconfig path and namespace aliases
 - [ ] Switch from `build` to `stable` status
-- [ ] User manual
+- [X] User manual
 - [ ] Installation manual
 
 **Milestone 6 (distribution)**
