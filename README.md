@@ -26,11 +26,11 @@ With `citrouille`, a CLI utility to quickly check Kubernetes deployments, engine
 
 **Installation manual**
 
-See [installation-manual.md](./installation-manual.md)
+See [installation-manual.md](./docs/installation-manual.md)
 
 **User manual**
 
-See [user-manual.md](./user-manual.md)
+See [user-manual.md](./docs/user-manual.md)
 
 **Contributions**
 
