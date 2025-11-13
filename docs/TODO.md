@@ -25,14 +25,11 @@
 - [X] Configuration checks
 - [X] Network security analysis
 - [X] RBAC checks
-- [ ] Trivy integration for SBOM generation
-- [ ] Trivy integration for container vulns
 
 **Milestone 5 (first release)**
 - [ ] Switch from `build` to `stable` status
 - [ ] User manual
 - [ ] Installation manual
-- [ ] Translations
 
 **Milestone 6 (distribution)**
 - [ ] RPM package
