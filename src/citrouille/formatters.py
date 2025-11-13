@@ -31,7 +31,7 @@ class TableFormatter:
         max_name = max(max_name, len("NAME"))
         max_namespace = max(max_namespace, len("NAMESPACE"))
         max_images = max(max_images, len("IMAGES"))
-        max_created = len("CREATED")
+        max_created = len("YYYY-MM-DD HH:MM:SS")  # 19 characters for full timestamp
         max_replicas = len("REPLICAS")
 
         # Create header
@@ -67,13 +67,13 @@ class TableFormatter:
 
     #
     # _format_timestamp
-    # Converts a datetime object to a formatted date string (YYYY-MM-DD)
+    # Converts a datetime object to a formatted datetime string (YYYY-MM-DD HH:MM:SS)
     #
     @staticmethod
     def _format_timestamp(timestamp: datetime) -> str:
         if timestamp is None:
             return "Unknown"
-        return timestamp.strftime("%Y-%m-%d")
+        return timestamp.strftime("%Y-%m-%d %H:%M:%S")
 
     #
     # format_comparison
