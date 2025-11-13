@@ -27,7 +27,8 @@ classifiers = [
 ]
 
 dependencies = [
-    "kubernetes>=34.1.0"
+    "kubernetes>=34.1.0",
+    "pyyaml>=6.0.3"
 ]
 
 [project.scripts]
