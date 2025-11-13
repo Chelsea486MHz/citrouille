@@ -180,7 +180,7 @@ def handle_inventory(args):
 #
 def handle_compare(args):
     try:
-        client = KubeClient(kubeconfig_path=args.kubeconfig, context=args.context)
+        client = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
 
         deployments_ns1 = client.get_deployments(args.namespace1)
         deployments_ns2 = client.get_deployments(args.namespace2)
