@@ -6,12 +6,6 @@
 
 1. [Prerequisites](#prerequisites)
 2. [Installation Methods](#installation-methods)
-3. [Verification](#verification)
-4. [Post-Installation Setup](#post-installation-setup)
-5. [Platform-Specific Notes](#platform-specific-notes)
-6. [Troubleshooting](#troubleshooting)
-7. [Upgrading](#upgrading)
-8. [Uninstalling](#uninstalling)
 
 
 
