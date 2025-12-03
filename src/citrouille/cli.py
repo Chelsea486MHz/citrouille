@@ -9,7 +9,7 @@ from citrouille.security_checks import run_security_checks
 from citrouille.config import load_config, resolve_cluster
 
 
-__version__ = "1.0.0"
+__version__ = "1.1.2"
 
 
 def create_parser():

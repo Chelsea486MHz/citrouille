@@ -47,5 +47,5 @@ Please refer to the [development guide](./development.md)
 Download and install a specific release:
 
 ```bash
-pip install https://github.com/Chelsea486MHz/citrouille/releases/download/v1.0.0/citrouille-1.0.0-py3-none-any.whl
+pip install https://github.com/Chelsea486MHz/citrouille/releases/download/v1.1.2/citrouille-1.1.2-py3-none-any.whl
 ```
