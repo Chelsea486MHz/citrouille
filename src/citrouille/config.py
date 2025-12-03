@@ -63,13 +63,29 @@ def load_config() -> Dict[str, Any]:
         return {}
 
 
-# namespace aliases
-def resolve_namespace(namespace: str, config: Dict[str, Any]) -> str:
-    if "namespaces" not in config:
-        return namespace
+# cluster aliases
+def resolve_cluster(cluster_alias: str, config: Dict[str, Any]) -> tuple[str, str | None]:
+    if "clusters" not in config:
+        return (cluster_alias, None)
 
-    namespaces = config["namespaces"]
-    if not isinstance(namespaces, dict):
-        return namespace
+    clusters = config["clusters"]
+    if not isinstance(clusters, dict):
+        return (cluster_alias, None)
 
-    return namespaces.get(namespace, namespace)
+    cluster_config = clusters.get(cluster_alias)
+    if cluster_config is None:
+        # No alias found, treat as literal namespace
+        return (cluster_alias, None)
+
+    if not isinstance(cluster_config, dict):
+        print(
+            f"Warning: Invalid cluster config for '{cluster_alias}'. "
+            "Expected dict with 'namespace' and 'context' fields.",
+            file=sys.stderr,
+        )
+        return (cluster_alias, None)
+
+    namespace = cluster_config.get("namespace", cluster_alias)
+    context = cluster_config.get("context")
+
+    return (namespace, context)

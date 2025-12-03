@@ -6,7 +6,7 @@ from citrouille.kube_client import KubeClient
 from citrouille.formatters import TableFormatter, JSONFormatter, SecurityFormatter
 from citrouille.comparator import compare_deployments
 from citrouille.security_checks import run_security_checks
-from citrouille.config import load_config, resolve_namespace
+from citrouille.config import load_config, resolve_cluster
 
 
 __version__ = "1.0.0"
@@ -150,13 +150,16 @@ def main():
 #
 def handle_inventory(args, config):
     try:
-        k8s = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
-
+        # Resolve cluster alias to get namespace and context
         if args.all_namespaces:
+            # Use CLI context if provided, otherwise use default
+            k8s = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
             deployments = k8s.get_all_deployments()
         else:
-            # Resolve namespace alias if present in config
-            namespace = resolve_namespace(args.namespace, config)
+            namespace, cluster_context = resolve_cluster(args.namespace, config)
+            # CLI context takes precedence over cluster config context
+            context = args.context if args.context else cluster_context
+            k8s = KubeClient(kubeconfig=args.kubeconfig, context=context)
             deployments = k8s.get_deployments(namespace=namespace)
 
         if args.output == "json":
@@ -179,14 +182,29 @@ def handle_inventory(args, config):
 #
 def handle_compare(args, config):
     try:
-        client = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
+        # Resolve cluster aliases to get namespace and context for each
+        namespace1, cluster_context1 = resolve_cluster(args.namespace1, config)
+        namespace2, cluster_context2 = resolve_cluster(args.namespace2, config)
 
-        # Resolve namespace aliases if present in config
-        namespace1 = resolve_namespace(args.namespace1, config)
-        namespace2 = resolve_namespace(args.namespace2, config)
+        # CLI context takes precedence over cluster config context
+        # If CLI context is provided, it applies to both namespaces
+        if args.context:
+            context1 = args.context
+            context2 = args.context
+        else:
+            context1 = cluster_context1
+            context2 = cluster_context2
 
-        deployments_ns1 = client.get_deployments(namespace1)
-        deployments_ns2 = client.get_deployments(namespace2)
+        # Create separate clients if contexts differ, otherwise reuse one client
+        if context1 == context2:
+            client = KubeClient(kubeconfig=args.kubeconfig, context=context1)
+            deployments_ns1 = client.get_deployments(namespace1)
+            deployments_ns2 = client.get_deployments(namespace2)
+        else:
+            client1 = KubeClient(kubeconfig=args.kubeconfig, context=context1)
+            client2 = KubeClient(kubeconfig=args.kubeconfig, context=context2)
+            deployments_ns1 = client1.get_deployments(namespace1)
+            deployments_ns2 = client2.get_deployments(namespace2)
 
         comparison = compare_deployments(deployments_ns1, deployments_ns2)
 
@@ -212,7 +230,13 @@ def handle_compare(args, config):
 #
 def handle_security(args, config):
     try:
-        kube_client = KubeClient(kubeconfig=args.kubeconfig, context=args.context)
+        # Resolve cluster alias to get namespace and context
+        namespace, cluster_context = resolve_cluster(args.namespace, config)
+
+        # CLI context takes precedence over cluster config context
+        context = args.context if args.context else cluster_context
+
+        kube_client = KubeClient(kubeconfig=args.kubeconfig, context=context)
 
         check_config = args.check_config
         check_network = args.check_network
@@ -221,9 +245,6 @@ def handle_security(args, config):
         if not check_config and not check_network:
             check_config = True
             check_network = True
-
-        # Resolve namespace alias if present in config
-        namespace = resolve_namespace(args.namespace, config)
 
         findings = run_security_checks(
             kube_client=kube_client,

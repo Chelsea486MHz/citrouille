@@ -4,7 +4,7 @@ import yaml
 from pathlib import Path
 from unittest.mock import patch, mock_open
 
-from citrouille.config import load_config, resolve_namespace, get_config_path
+from citrouille.config import load_config, resolve_cluster, get_config_path
 
 
 class TestConfigPath:
@@ -36,9 +36,13 @@ class TestLoadConfig:
     def test_load_config_valid_yaml(self):
         valid_yaml = """
 kubeconfig: /path/to/kubeconfig
-namespaces:
-  prod: production
-  stg: staging
+clusters:
+  prod:
+    namespace: production
+    context: prod-cluster
+  stg:
+    namespace: staging
+    context: staging-cluster
 """
         with patch("citrouille.config.get_config_path") as mock_path:
             with tempfile.NamedTemporaryFile(
@@ -52,8 +56,10 @@ namespaces:
                 config = load_config()
 
                 assert config["kubeconfig"] == "/path/to/kubeconfig"
-                assert config["namespaces"]["prod"] == "production"
-                assert config["namespaces"]["stg"] == "staging"
+                assert config["clusters"]["prod"]["namespace"] == "production"
+                assert config["clusters"]["prod"]["context"] == "prod-cluster"
+                assert config["clusters"]["stg"]["namespace"] == "staging"
+                assert config["clusters"]["stg"]["context"] == "staging-cluster"
             finally:
                 temp_path.unlink()
 
@@ -125,80 +131,142 @@ kubeconfig: /path
                 temp_path.unlink()
 
 
-class TestResolveNamespace:
+class TestResolveCluster:
     #
-    # test_resolve_namespace_with_alias
-    # Tests that namespace alias is correctly resolved
+    # test_resolve_cluster_with_alias
+    # Tests that cluster alias is correctly resolved to (namespace, context)
     #
-    def test_resolve_namespace_with_alias(self):
-        config = {"namespaces": {"prod": "production", "stg": "staging"}}
-
-        assert resolve_namespace("prod", config) == "production"
-        assert resolve_namespace("stg", config) == "staging"
-
-    #
-    # test_resolve_namespace_without_alias
-    # Tests that non-aliased namespace is returned unchanged
-    #
-    def test_resolve_namespace_without_alias(self):
-        config = {"namespaces": {"prod": "production"}}
-
-        assert resolve_namespace("default", config) == "default"
-        assert resolve_namespace("kube-system", config) == "kube-system"
-
-    #
-    # test_resolve_namespace_no_namespaces_section
-    # Tests that namespace is returned unchanged when no namespaces section exists
-    #
-    def test_resolve_namespace_no_namespaces_section(self):
-        config = {"kubeconfig": "/path/to/config"}
-
-        assert resolve_namespace("production", config) == "production"
-        assert resolve_namespace("default", config) == "default"
-
-    #
-    # test_resolve_namespace_empty_config
-    # Tests that namespace is returned unchanged with empty config
-    #
-    def test_resolve_namespace_empty_config(self):
-        config = {}
-
-        assert resolve_namespace("production", config) == "production"
-        assert resolve_namespace("default", config) == "default"
-
-    #
-    # test_resolve_namespace_invalid_namespaces_section
-    # Tests that namespace is returned unchanged when namespaces section is invalid
-    #
-    def test_resolve_namespace_invalid_namespaces_section(self):
-        config = {"namespaces": "not-a-dict"}
-
-        assert resolve_namespace("production", config) == "production"
-
-    #
-    # test_resolve_namespace_case_sensitive
-    # Tests that namespace alias resolution is case-sensitive
-    #
-    def test_resolve_namespace_case_sensitive(self):
-        config = {"namespaces": {"prod": "production"}}
-
-        assert resolve_namespace("prod", config) == "production"
-        assert resolve_namespace("Prod", config) == "Prod"
-        assert resolve_namespace("PROD", config) == "PROD"
-
-    #
-    # test_resolve_namespace_complex_aliases
-    # Tests resolving complex namespace names
-    #
-    def test_resolve_namespace_complex_aliases(self):
+    def test_resolve_cluster_with_alias(self):
         config = {
-            "namespaces": {
-                "prod": "microservices-production-us-east-1",
-                "stg": "microservices-staging-us-west-2",
-                "dev": "microservices-development",
+            "clusters": {
+                "prod": {"namespace": "production", "context": "prod-cluster"},
+                "stg": {"namespace": "staging", "context": "staging-cluster"},
             }
         }
 
-        assert resolve_namespace("prod", config) == "microservices-production-us-east-1"
-        assert resolve_namespace("stg", config) == "microservices-staging-us-west-2"
-        assert resolve_namespace("dev", config) == "microservices-development"
+        assert resolve_cluster("prod", config) == ("production", "prod-cluster")
+        assert resolve_cluster("stg", config) == ("staging", "staging-cluster")
+
+    #
+    # test_resolve_cluster_without_alias
+    # Tests that non-aliased cluster is returned as (namespace, None)
+    #
+    def test_resolve_cluster_without_alias(self):
+        config = {
+            "clusters": {
+                "prod": {"namespace": "production", "context": "prod-cluster"}
+            }
+        }
+
+        assert resolve_cluster("default", config) == ("default", None)
+        assert resolve_cluster("kube-system", config) == ("kube-system", None)
+
+    #
+    # test_resolve_cluster_no_clusters_section
+    # Tests that cluster is returned as (namespace, None) when no clusters section exists
+    #
+    def test_resolve_cluster_no_clusters_section(self):
+        config = {"kubeconfig": "/path/to/config"}
+
+        assert resolve_cluster("production", config) == ("production", None)
+        assert resolve_cluster("default", config) == ("default", None)
+
+    #
+    # test_resolve_cluster_empty_config
+    # Tests that cluster is returned as (namespace, None) with empty config
+    #
+    def test_resolve_cluster_empty_config(self):
+        config = {}
+
+        assert resolve_cluster("production", config) == ("production", None)
+        assert resolve_cluster("default", config) == ("default", None)
+
+    #
+    # test_resolve_cluster_invalid_clusters_section
+    # Tests that cluster is returned as (namespace, None) when clusters section is invalid
+    #
+    def test_resolve_cluster_invalid_clusters_section(self):
+        config = {"clusters": "not-a-dict"}
+
+        assert resolve_cluster("production", config) == ("production", None)
+
+    #
+    # test_resolve_cluster_case_sensitive
+    # Tests that cluster alias resolution is case-sensitive
+    #
+    def test_resolve_cluster_case_sensitive(self):
+        config = {
+            "clusters": {"prod": {"namespace": "production", "context": "prod-cluster"}}
+        }
+
+        assert resolve_cluster("prod", config) == ("production", "prod-cluster")
+        assert resolve_cluster("Prod", config) == ("Prod", None)
+        assert resolve_cluster("PROD", config) == ("PROD", None)
+
+    #
+    # test_resolve_cluster_complex_aliases
+    # Tests resolving complex cluster configurations
+    #
+    def test_resolve_cluster_complex_aliases(self):
+        config = {
+            "clusters": {
+                "prod-east": {
+                    "namespace": "microservices-production",
+                    "context": "us-east-1-prod",
+                },
+                "prod-west": {
+                    "namespace": "microservices-production",
+                    "context": "us-west-2-prod",
+                },
+                "dev": {"namespace": "microservices-development", "context": "dev-cluster"},
+            }
+        }
+
+        assert resolve_cluster("prod-east", config) == (
+            "microservices-production",
+            "us-east-1-prod",
+        )
+        assert resolve_cluster("prod-west", config) == (
+            "microservices-production",
+            "us-west-2-prod",
+        )
+        assert resolve_cluster("dev", config) == ("microservices-development", "dev-cluster")
+
+    #
+    # test_resolve_cluster_only_namespace
+    # Tests cluster config with only namespace field (no context)
+    #
+    def test_resolve_cluster_only_namespace(self):
+        config = {
+            "clusters": {
+                "prod": {"namespace": "production"},
+            }
+        }
+
+        assert resolve_cluster("prod", config) == ("production", None)
+
+    #
+    # test_resolve_cluster_only_context
+    # Tests cluster config with only context field (namespace defaults to alias)
+    #
+    def test_resolve_cluster_only_context(self):
+        config = {
+            "clusters": {
+                "prod": {"context": "prod-cluster"},
+            }
+        }
+
+        assert resolve_cluster("prod", config) == ("prod", "prod-cluster")
+
+    #
+    # test_resolve_cluster_invalid_cluster_config
+    # Tests that invalid cluster config returns (alias, None)
+    #
+    def test_resolve_cluster_invalid_cluster_config(self):
+        config = {
+            "clusters": {
+                "prod": "not-a-dict",
+            }
+        }
+
+        assert resolve_cluster("prod", config) == ("prod", None)
