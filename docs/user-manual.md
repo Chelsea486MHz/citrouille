@@ -263,7 +263,7 @@ Example (`~/.config/citrouille/config.yaml`):
 
 ```yaml
 kubeconfig: /home/user/.kube/production-cluster-config
-namespaces:
+clusters:
   prod:
     context: us-east-1
     namespace: microservices-production-us-east-1
