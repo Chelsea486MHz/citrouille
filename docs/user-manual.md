@@ -259,12 +259,22 @@ To simplify command usage, you can create a configuration file at `~/.config/cit
 
 Set a default kubeconfig file path to avoid typing `--kubeconfig` every time, and create friendly names for complex namespace names.
 
+Example (`~/.config/citrouille/config.yaml`):
+
 ```yaml
 kubeconfig: /home/user/.kube/production-cluster-config
 namespaces:
-  prod: microservices-production-us-east-1
-  int: microservices-integration-us-east-1
-  dev: microservices-development-us-east-1
+  prod:
+    context: us-east-1
+    namespace: microservices-production-us-east-1
+
+  int:
+    context: us-east-1
+    namespace: microservices-integration-us-east-1
+
+  dev:
+    context: us-west-1
+    namespace: microservices-development-us-east-1
 ```
 
 
