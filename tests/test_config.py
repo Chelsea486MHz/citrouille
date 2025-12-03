@@ -153,9 +153,7 @@ class TestResolveCluster:
     #
     def test_resolve_cluster_without_alias(self):
         config = {
-            "clusters": {
-                "prod": {"namespace": "production", "context": "prod-cluster"}
-            }
+            "clusters": {"prod": {"namespace": "production", "context": "prod-cluster"}}
         }
 
         assert resolve_cluster("default", config) == ("default", None)
@@ -218,7 +216,10 @@ class TestResolveCluster:
                     "namespace": "microservices-production",
                     "context": "us-west-2-prod",
                 },
-                "dev": {"namespace": "microservices-development", "context": "dev-cluster"},
+                "dev": {
+                    "namespace": "microservices-development",
+                    "context": "dev-cluster",
+                },
             }
         }
 
@@ -230,7 +231,10 @@ class TestResolveCluster:
             "microservices-production",
             "us-west-2-prod",
         )
-        assert resolve_cluster("dev", config) == ("microservices-development", "dev-cluster")
+        assert resolve_cluster("dev", config) == (
+            "microservices-development",
+            "dev-cluster",
+        )
 
     #
     # test_resolve_cluster_only_namespace

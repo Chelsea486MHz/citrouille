@@ -64,7 +64,9 @@ def load_config() -> Dict[str, Any]:
 
 
 # cluster aliases
-def resolve_cluster(cluster_alias: str, config: Dict[str, Any]) -> tuple[str, str | None]:
+def resolve_cluster(
+    cluster_alias: str, config: Dict[str, Any]
+) -> tuple[str, str | None]:
     if "clusters" not in config:
         return (cluster_alias, None)
 
